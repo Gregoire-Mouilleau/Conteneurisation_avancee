@@ -5,10 +5,11 @@
 
         ini_set('display_errors', '1');
 
-        $sql = "SELECT * FROM utilisateurs WHERE us_login = ? AND us_password = SHA2(?, 256)";
+        $hashedPassword = hash('sha256', $_POST['us_password']);
+        $sql = "SELECT * FROM utilisateurs WHERE us_login = ? AND us_password = ?";
         $stmt = $db->prepare($sql);
         $stmt->bindParam(1, $_POST['us_login']);
-        $stmt->bindParam(2, $_POST['us_password']);
+        $stmt->bindParam(2, $hashedPassword);
         $stmt->execute();
         $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if ($res != false) {
