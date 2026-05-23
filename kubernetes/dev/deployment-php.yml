@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-dev
+  namespace: gestion-produits-dev
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: php-dev
+  template:
+    metadata:
+      labels:
+        app: php-dev
+    spec:
+      containers:
+        - name: php-dev
+          image: gregoiremouilleau/gestion-produits-php-pgsql:latest
+          env:
+            - name: DB_HOST
+              value: "db"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: gestion-produits-dev-secret
+                  key: DB_NAME
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: gestion-produits-dev-secret
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gestion-produits-dev-secret
+                  key: DB_PASSWORD
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: uploads
+              mountPath: /var/www/html/uploads
+      volumes:
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: pvc-uploads-dev

@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init
+  namespace: gestion-produits-dev
+data:
+  init.sql: |
+    CREATE TABLE IF NOT EXISTS produits (
+        pro_id          SERIAL PRIMARY KEY,
+        pro_lib         VARCHAR(200) NOT NULL,
+        pro_prix        DECIMAL(10,2) NOT NULL,
+        pro_description TEXT
+    );
+    CREATE TABLE IF NOT EXISTS ressources (
+        re_id   SERIAL PRIMARY KEY,
+        re_type VARCHAR(100) NOT NULL,
+        re_url  VARCHAR(1000) NOT NULL,
+        re_nom  VARCHAR(100) DEFAULT NULL,
+        pro_id  INT NOT NULL,
+        CONSTRAINT ressources_produits_fk FOREIGN KEY (pro_id) REFERENCES produits (pro_id)
+    );
+    CREATE TABLE IF NOT EXISTS utilisateurs (
+        us_id       SERIAL PRIMARY KEY,
+        us_login    VARCHAR(100) NOT NULL,
+        us_password VARCHAR(100) NOT NULL,
+        UNIQUE (us_login)
+    );
+    INSERT INTO produits (pro_lib, pro_prix, pro_description) VALUES
+    ('Pédales Shimano XT M8040 M/L', 74.99, 'Pédales plates pour usage All Mountain/Enduro.'),
+    ('Selle FIZIK ARIONE VERSUS Rails Kium', 59.99, 'Selle au profil plat et très long avec canal central.'),
+    ('Chaussures VTT MAVIC CROSSMAX SL PRO THERMO Noir', 164.99, 'Chaussures hiver avec membrane Gore-Tex.'),
+    ('Pack GPS GARMIN EDGE 1030 + Ceinture Cardio', 519.99, 'GPS vélo avec ceinture cardio pour la compétition.'),
+    ('Fourche DVO SAPPHIRE 29', 549.99, 'Fourche Trail/All Mountain 140mm de débattement.');
+    INSERT INTO utilisateurs (us_login, us_password) VALUES
+    ('admin', '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8');

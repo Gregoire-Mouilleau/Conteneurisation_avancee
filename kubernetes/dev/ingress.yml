@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gestion-produits-dev-ingress
+  namespace: gestion-produits-dev
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - dev.gestion-produits.local
+      secretName: gestion-produits-dev-tls
+  rules:
+    - host: dev.gestion-produits.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: php-dev
+                port:
+                  number: 80

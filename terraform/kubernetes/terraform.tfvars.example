@@ -1,0 +1,7 @@
+scw_access_key  = "SCWXXXXXXXXXXXXXXXXX"
+scw_secret_key  = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+scw_project_id  = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+scw_zone        = "fr-par-1"
+scw_region      = "fr-par"
+db_password     = "CHANGE_ME_DB_PASS"
+dev_db_password = "CHANGE_ME_DEV_DB_PASS"
