@@ -53,8 +53,8 @@ gestion-produits/
 │   ├── dev/                # Idem pour PostgreSQL
 │   └── generate-tls-secrets.sh
 └── terraform/
-    ├── docker/             # Scaleway VPS + provisioning Docker
-    └── kubernetes/         # Scaleway Kapsule (K8s managé) + Helm + déploiement
+    ├── docker/             # OCI VM A1.Flex (Always Free) + provisioning Docker
+    └── kubernetes/         # OCI 3× A1.Flex kubeadm + Helm + déploiement
 ```
 
 ## Déploiement Docker (local)
@@ -127,26 +127,65 @@ LB_IP=$(kubectl get svc -n ingress-nginx ingress-nginx-controller -o jsonpath='{
 echo "$LB_IP gestion-produits.local dev.gestion-produits.local"
 ```
 
-## Infrastructure Terraform
+## Infrastructure Terraform (Oracle Cloud Free Tier)
 
-### Docker (Scaleway VPS)
+Les deux infrastructures utilisent **Oracle Cloud Always Free** — aucun coût.
+
+### Prérequis OCI (à faire une seule fois)
+
+1. Créer un compte sur [cloud.oracle.com](https://cloud.oracle.com) (gratuit)
+2. Générer une clé API : *Profile → API Keys → Add API Key*
+3. Télécharger la clé `.pem` dans `~/.oci/oci_api_key.pem`
+4. Noter : Tenancy OCID, User OCID, Fingerprint (affichés après création de la clé)
+5. Avoir une paire de clés SSH : `~/.ssh/id_rsa` + `~/.ssh/id_rsa.pub`
+
+### Docker (OCI VM A1.Flex — 1 OCPU / 6 GB)
 
 ```bash
 cd terraform/docker
 cp terraform.tfvars.example terraform.tfvars
-# Remplir les credentials Scaleway et mots de passe
+# Remplir oci_tenancy_ocid, oci_user_ocid, oci_fingerprint, ssh_public_key, mots de passe
 terraform init
 terraform apply
 ```
 
-### Kubernetes (Scaleway Kapsule)
+Terraform crée automatiquement :
+- 1 VM ARM64 `VM.Standard.A1.Flex` (Ubuntu 22.04, 1 OCPU / 6 GB)
+- VCN + sous-réseau public + règles pare-feu (22/80/443)
+- cloud-init : installe Docker, clone le repo, génère les TLS, lance `docker compose up`
+
+**Après `terraform apply`**, récupérer l'IP en sortie et ajouter dans `/etc/hosts` :
+```
+<IP_DOCKER> gestion-produits.local dev.gestion-produits.local
+```
+
+### Kubernetes (OCI — 3 nœuds A1.Flex kubeadm)
 
 ```bash
 cd terraform/kubernetes
 cp terraform.tfvars.example terraform.tfvars
-# Remplir les credentials Scaleway et mots de passe
+# Remplir les mêmes variables OCI + ssh_private_key_path
 terraform init
 terraform apply
+```
+
+Terraform crée automatiquement :
+- 3 VM ARM64 `VM.Standard.A1.Flex` : 1 master + 2 workers (1 OCPU / 6 GB chacun)
+- Cluster kubeadm v1.29 + CNI Flannel
+- Nginx Ingress Controller (DaemonSet hostNetwork — ports 80/443 natifs)
+- Longhorn 1.6.2 (stockage partagé RWX)
+- Déploiement de l'application prod + dev avec TLS auto-signés
+
+**Après `terraform apply`**, récupérer l'IP d'un worker et ajouter dans `/etc/hosts` :
+```
+<IP_WORKER1> gestion-produits.local dev.gestion-produits.local
+```
+
+Pour accéder au cluster localement :
+```bash
+ssh -i ~/.ssh/id_rsa ubuntu@<IP_MASTER> 'cat ~/.kube/config' > ~/.kube/config-gp
+export KUBECONFIG=~/.kube/config-gp
+kubectl get nodes
 ```
 
 Terraform crée automatiquement :
@@ -159,9 +198,9 @@ Terraform crée automatiquement :
 
 | Image | Description |
 |-------|-------------|
-| `gregoiremouilleau/gestion-produits-php:latest` | PHP 8.2 + Apache + pdo_mysql |
-| `gregoiremouilleau/gestion-produits-mysql:latest` | MySQL 8.4 avec données initiales |
-| `gregoiremouilleau/gestion-produits-php-pgsql:latest` | PHP 8.2 + Apache + pdo_pgsql |
+| `gregoiremouilleau/gestion-produits-php:latest` | PHP 8.2 + Apache + pdo_mysql (multi-arch amd64/arm64) |
+| `gregoiremouilleau/gestion-produits-mysql:latest` | MySQL 8.4 avec données initiales (multi-arch amd64/arm64) |
+| `gregoiremouilleau/gestion-produits-php-pgsql:latest` | PHP 8.2 + Apache + pdo_pgsql (multi-arch amd64/arm64) |
 
 ## Choix techniques
 
@@ -170,7 +209,7 @@ Terraform crée automatiquement :
 | Reverse proxy | Nginx | Léger, performant, SSL natif |
 | BDD prod | MySQL 8.4 | Compatibilité native avec l'app |
 | BDD dev | PostgreSQL 17 | Démonstration portabilité BDD |
-| Orchestration K8s | Scaleway Kapsule | Managé, aligné ressources cours |
-| Storage K8s | Longhorn | Stockage partagé RWX pour uploads |
-| IaC | Terraform + Scaleway | Automatisation complète |
+| Orchestration K8s | kubeadm v1.29 | Cluster auto-géré sur OCI Free Tier |
+| Storage K8s | Longhorn 1.6.2 | Stockage partagé RWX pour uploads |
+| IaC | Terraform + OCI Provider | Infrastructure Always Free, zéro coût |
 | TLS | Auto-signé (OpenSSL) | Résolution locale sans domaine public |
