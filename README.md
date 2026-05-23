@@ -13,12 +13,12 @@ Application PHP/MySQL de gestion de produits, déployée avec Docker et Kubernet
                ┌───────────────────┴──────────────────┐
                │                                      │
     ┌──────────▼──────────┐               ┌──────────▼──────────┐
-    │    PHP/Apache        │               │    PHP/Apache        │
-    │  (prod) pdo_mysql    │               │   (dev) pdo_pgsql   │
+    │    PHP/Apache       │               │    PHP/Apache       │
+    │  (prod) pdo_mysql   │               │   (dev) pdo_pgsql   │
     └──────────┬──────────┘               └──────────┬──────────┘
                │                                      │
     ┌──────────▼──────────┐               ┌──────────▼──────────┐
-    │      MySQL 8.4       │               │   PostgreSQL 17     │
+    │      MySQL 8.4      │               │   PostgreSQL 17     │
     │  gestion_produits   │               │  gestion_produits   │
     └─────────────────────┘               └─────────────────────┘
 ```
