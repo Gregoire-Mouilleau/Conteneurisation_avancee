@@ -5,8 +5,8 @@ metadata:
   namespace: gestion-produits-prod
 spec:
   accessModes:
-    - ReadWriteMany
-  storageClassName: longhorn
+    - ReadWriteOnce
+  storageClassName: hostpath
   resources:
     requests:
       storage: 2Gi
