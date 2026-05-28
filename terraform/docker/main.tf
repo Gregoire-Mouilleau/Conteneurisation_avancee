@@ -75,19 +75,28 @@ resource "oci_core_security_list" "docker_sl" {
   ingress_security_rules {
     protocol = "6"
     source   = "0.0.0.0/0"
-    tcp_options { min = 22;  max = 22  }
+    tcp_options {
+      min = 22
+      max = 22
+    }
   }
 
   ingress_security_rules {
     protocol = "6"
     source   = "0.0.0.0/0"
-    tcp_options { min = 80;  max = 80  }
+    tcp_options {
+      min = 80
+      max = 80
+    }
   }
 
   ingress_security_rules {
     protocol = "6"
     source   = "0.0.0.0/0"
-    tcp_options { min = 443; max = 443 }
+    tcp_options {
+      min = 443
+      max = 443
+    }
   }
 }
 
