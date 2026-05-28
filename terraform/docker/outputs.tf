@@ -1,14 +1,14 @@
 output "docker_vm_ip" {
   description = "IP publique de la VM Docker"
-  value       = scaleway_instance_ip.docker_ip.address
+  value       = oci_core_instance.docker_server.public_ip
 }
 
 output "app_prod_url" {
   description = "URL de l'application en production"
-  value       = "https://gestion-produits.local (ajouter ${scaleway_instance_ip.docker_ip.address} dans /etc/hosts)"
+  value       = "https://gestion-produits.local (ajouter ${oci_core_instance.docker_server.public_ip} dans /etc/hosts)"
 }
 
 output "app_dev_url" {
   description = "URL de la version dev"
-  value       = "https://dev.gestion-produits.local (ajouter ${scaleway_instance_ip.docker_ip.address} dans /etc/hosts)"
+  value       = "https://dev.gestion-produits.local (ajouter ${oci_core_instance.docker_server.public_ip} dans /etc/hosts)"
 }

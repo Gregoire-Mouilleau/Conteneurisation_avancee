@@ -16,6 +16,7 @@ spec:
       containers:
         - name: php-prod
           image: gregoiremouilleau/gestion-produits-php:latest
+          imagePullPolicy: Always
           env:
             - name: DB_HOST
               value: "db"
