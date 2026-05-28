@@ -3,10 +3,8 @@ kind: Ingress
 metadata:
   name: gestion-produits-dev-ingress
   namespace: gestion-produits-dev
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
-  ingressClassName: nginx
+  ingressClassName: traefik
   tls:
     - hosts:
         - dev.gestion-produits.local
