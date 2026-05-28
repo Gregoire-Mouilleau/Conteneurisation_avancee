@@ -18,7 +18,7 @@ spec:
           image: gregoiremouilleau/gestion-produits-php-pgsql:latest
           env:
             - name: DB_HOST
-              value: "postgres"
+              value: "db"
             - name: DB_PORT
               value: "5432"
             - name: DB_NAME
